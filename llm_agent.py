@@ -14,17 +14,17 @@ load_dotenv()
  # Gradio OCR Tool
 def ocr_tool(image_path: str) -> str:
     try:
-        client = Client("prithivMLmods/Multimodal-OCR")
+        client = Client("IotaCluster/OCR")
+        # Accept both local file paths and URLs
+        image_input = image_path
+        if not (image_path.startswith('http://') or image_path.startswith('https://')):
+            image_input = handle_file(image_path)
+        else:
+            image_input = handle_file(image_path)  # handle_file also works with URLs
         result = client.predict(
-            model_name="olmOCR-7B-0725",
-            text="",
-            image=handle_file(image_path),
-            max_new_tokens=1024,
-            temperature=0.3,
-            top_p=0.9,
-            top_k=50,
-            repetition_penalty=1.2,
-            api_name="/generate_image"
+            image=image_input,
+            language=["eng"],
+            api_name="/predict"
         )
         return str(result)
     except Exception as e:
@@ -104,9 +104,11 @@ def compile_images_and_text_to_doc(image_paths, text_objects):
 
 if __name__ == "__main__":
     # Example usage:
-    image_paths = ["4090.png", "5080.png"]
+    image_paths = ["4090.png", "eg_img.png", "5080.png"]
     text_objects = [
         {"Name": "RTX 5080 GPU", "Cost": "126999", "Quantity": 3},
-        {"Name": "RTX 4090", "Cost": "292999", "Quantity": 5}
+        {"Name": "RTX 4090", "Cost": "292999", "Quantity": 5, "Description": "High-end GPU for gaming and AI"},
+        {"Name": "groq", "Cost": "N/A", "Quantity": "N/A", "Description": "Service provider for AI models"},
+        {"Name": "T 1000", "Cost": "N/A", "Quantity": "N/A", "Description": "High-end GPU for gaming and AI"}
     ]
     compile_images_and_text_to_doc(image_paths, text_objects)
