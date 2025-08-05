@@ -3,6 +3,7 @@ from gradio_client import Client
 from PIL import Image
 import io
 import base64
+import requests
 
 def get_screenshot(url):
     try:
@@ -12,6 +13,7 @@ def get_screenshot(url):
             url=url,
             api_name="/predict"
         )
+        print("Debugging result:", result)  # Print the result for debugging
 
         # If result is a base64-encoded image or image path
         if isinstance(result, str):
@@ -19,9 +21,15 @@ def get_screenshot(url):
                 # Base64 encoded image
                 base64_image = result.split(',', maxsplit=1)[1]
                 image_data = base64.b64decode(base64_image)
-            elif result.endswith(".png") or result.endswith(".jpg"):
-                # Image path returned
-                image_data = requests.get(result).content
+            elif result.endswith(".png") or result.endswith(".jpg") or result.endswith(".webp"):
+                if result.startswith("C:\\") or result.startswith("/"):
+                    # Local file path returned
+                    image = Image.open(result)
+                else:
+                    # URL returned
+                    image_data = requests.get(result).content
+                    image = Image.open(io.BytesIO(image_data))
+                return image
             else:
                 print("Unexpected image format.")
                 return None
@@ -43,7 +51,7 @@ def main():
 
     if image:
         image.save("gradio_screenshot.png")
-        image.show()
+        #image.show()
         print("Screenshot saved and displayed.")
     else:
         print("Screenshot could not be retrieved.")
